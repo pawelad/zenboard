@@ -1,0 +1,35 @@
+<header>
+  <nav class="navbar navbar-toggleable-md navbar-inverse bg-primary">
+    <div class="container">
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".dual-collapse">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <a class="navbar-brand" href="{% url 'home' %}">Zenboard</a>
+
+      {# Left side #}
+      <div class="collapse navbar-collapse dual-collapse">
+        <ul class="navbar-nav mr-auto">
+        </ul>
+      </div>
+
+      {# Right side #}
+      <div class="collapse navbar-collapse dual-collapse">
+        <ul class="navbar-nav ml-auto">
+          {% if user.is_authenticated %}
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'logout' %}">
+                <i class="fa fa-lg fa-fw fa-sign-out"></i>Logout
+              </a>
+            </li>
+          {% else %}
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'login' %}">
+                <i class="fa fa-lg fa-fw fa-sign-in"></i>Login
+              </a>
+            </li>
+          {% endif %}
+        </ul>
+      </div>
+    </div>
+  </nav>
+</header>

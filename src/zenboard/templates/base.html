@@ -1,0 +1,65 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <meta name="author" content="Paweł Adamczak">
+  <meta name="application-name" content="Zenboard">
+  <meta name="description" content="https://github.com/pawelad/zenboard">
+
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="{% static 'img/favicons/apple-touch-icon-144x144.png' %}">
+  <link rel="apple-touch-icon-precomposed" sizes="152x152" href="{% static 'img/favicons/apple-touch-icon-152x152.png' %}">
+  <link rel="icon" type="image/png" sizes="32x32" href="{% static 'img/favicons/favicon-32x32.png' %}" >
+  <link rel="icon" type="image/png" sizes="16x16" href="{% static 'img/favicons/favicon-16x16.png' %}" >
+
+  <title>{% block title %}Zenboard{% endblock title %}</title>
+
+  {% block css %}
+    {# Base #}
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.rawgit.com/thomaspark/bootswatch/gh-pages/4-alpha/materia/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat:300,400,700">
+    {# Third party #}
+    <link rel="stylesheet" href="https://cdn.rawgit.com/froala/design-blocks/686c0df8/dist/css/froala_blocks.css">
+    {# Own #}
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}" >
+  {% endblock css %}
+</head>
+
+<body>
+{% block body %}
+  {% block header %}
+    {% include 'partials/header.html' %}
+  {% endblock header %}
+
+
+  {% block container %}
+    <main class="container-fluid" role="main">
+        {% block content %}{% endblock content %}
+    </main>
+  {% endblock container %}
+
+
+  {% block footer %}
+    {% include 'partials/footer.html' %}
+  {% endblock footer %}
+{% endblock body %}
+
+
+{% block base_js %}
+  {# Base #}
+  <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js"></script>
+{% endblock base_js %}
+
+
+{% block extra_js %}{% endblock extra_js %}
+</body>
+
+</html>

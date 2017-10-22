@@ -1,0 +1,37 @@
+/* Base */
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+body {
+  /* Margin bottom by footer height */
+  margin-bottom: 100px;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Montserrat', serif;
+}
+
+.footer {
+  position: absolute !important;
+  bottom: 0;
+  height: 100px;
+  width: 100%;
+  background-color: #ECEFF1;
+}
+
+.footer a:hover {
+  text-decoration: none;
+}
+
+
+/* Navbar */
+.navbar-brand {
+  font-family: 'Montserrat', serif;
+  font-weight: 300;
+}
+
+.navbar-brand:hover {
+  text-shadow: -1px 1px 10px #ffc, 1px -1px 10px #fff;
+}

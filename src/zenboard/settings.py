@@ -42,6 +42,7 @@ INSTALLED_APPS = [
 
     'django_redis',
     'rest_framework',
+    'widget_tweaks',
 ]
 
 
@@ -113,6 +114,10 @@ USE_TZ = True
 
 # Misc
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+LOGIN_URL = 'login'
+LOGIN_REDIRECT_URL = 'home'
+LOGOUT_REDIRECT_URL = 'home'
 
 
 #############################

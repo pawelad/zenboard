@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+
+
+{% block content %}
+  <section class="fdb-block">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-12 col-md-8 col-lg-7 col-xl-5 text-center">
+          <div class="fdb-box fdb-touch">
+            {% include 'forms/form_errors.html' %}
+
+            {% with WIDGET_ERROR_CLASS='is-invalid' %}
+            <form method="post" action=".">
+              {% csrf_token %}
+              <div class="row">
+                <div class="col">
+                  <h1>Log In</h1>
+                </div>
+              </div>
+              <div class="row mt-4">
+                <div class="col">
+                  {% render_field form.username class+="form-control" placeholder="Username" %}
+                </div>
+              </div>
+              <div class="row mt-4">
+                <div class="col">
+                  {% render_field form.password class+="form-control" placeholder="Password" %}
+                  <p class="text-right"><a href="#">Recover Password</a></p>
+                </div>
+              </div>
+              <div class="row mt-4">
+                <div class="col">
+                  <button class="btn btn-primary" type="submit">Submit</button>
+                </div>
+              </div>
+            </form>
+            {% endwith %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+{% endblock content %}
