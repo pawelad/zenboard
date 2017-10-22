@@ -6,6 +6,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.urls import reverse
 
+from boards.managers import BoardsQuerySet
 from boards.utils import github_api, zenhub_api
 
 
@@ -41,38 +42,40 @@ class Board(models.Model):
     )
 
     filter_sign = models.CharField(
-        verbose_name='Filter sign',
+        verbose_name='filter sign',
         max_length=16,
         default='🐙',
     )
 
     include_epics = models.BooleanField(
-        verbose_name="Include Epic issues",
+        verbose_name='include Epic issues',
         default=False,
     )
 
     is_active = models.BooleanField(
-        verbose_name='Is active',
+        verbose_name='is active',
         default=True,
     )
 
     whitelisted_users = models.ManyToManyField(
         settings.AUTH_USER_MODEL, related_name='boards',
-        verbose_name='Whitelisted users',
+        verbose_name='whitelisted users',
         blank=True,
     )
 
     created = models.DateTimeField(
-        verbose_name="Created at",
+        verbose_name='created at',
         editable=False,
         auto_now_add=True,
     )
 
     modified = models.DateTimeField(
-        verbose_name="Modified at",
+        verbose_name='modified at',
         editable=False,
         auto_now=True,
     )
+
+    objects = BoardsQuerySet.as_manager()
 
     class Meta:
         verbose_name = "Board"
@@ -91,26 +94,6 @@ class Board(models.Model):
         gh_repo = github_api.repository(owner, repo)
 
         return gh_repo
-
-    def is_whitelisted(self, user):
-        """
-        Helper method that checks if passed user is whitelisted.
-
-        :param user: Django user
-        :type user: users.User
-        :returns: whether the user is whitelisted
-        :rtype: bool
-        """
-        if not self.is_active:
-            return False
-
-        if user.is_superuser:
-            return True
-
-        if self.whitelisted_users.filter(pk=user.pk).exists():
-            return True
-
-        return False
 
     def get_board_data(self):
         """

@@ -1,14 +1,14 @@
 """
 boards module related views
 """
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.cache import cache
-from django.http import Http404
 from django.views.generic import DetailView
 
 from boards import models
 
 
-class BoardDetailView(DetailView):
+class BoardDetailView(LoginRequiredMixin, DetailView):
     """
     Board instance detail view
     """
@@ -18,17 +18,18 @@ class BoardDetailView(DetailView):
     template_name = 'boards/details.html'
     context_object_name = 'board'
 
-    def get_object(self, queryset=None):
+    def get_queryset(self):
         """
         Extends Django's `get_object` method and makes sure that the
         logged in user should be able to access the board.
         """
-        obj = super().get_object(queryset)
+        qs = super().get_queryset()
 
-        if not obj.is_whitelisted(self.request.user):
-            raise Http404
+        # Allow superuser to see all boards
+        if not self.request.user.is_superuser:
+            qs = qs.for_user(self.request.user)
 
-        return obj
+        return qs
 
     def get_context_data(self, **kwargs):
         """

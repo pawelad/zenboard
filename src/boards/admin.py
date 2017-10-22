@@ -15,7 +15,10 @@ class BoardAdmin(admin.ModelAdmin):
         'pk', 'name', 'github_repository', 'github_labels', 'get_users',
         'is_active', 'created', 'modified',
     )
-    list_filter = ('is_active', 'whitelisted_users', 'created', 'modified')
+    list_filter = (
+        'whitelisted_users', 'is_active', 'github_repository',
+        'created', 'modified',
+    )
     search_fields = ('name', 'github_repository')
 
     def get_users(self, obj):
