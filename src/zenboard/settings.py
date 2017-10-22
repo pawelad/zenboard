@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'zenboard',
+    'boards',
 
     'django_redis',
     'rest_framework',
@@ -110,6 +111,11 @@ TIME_ZONE = 'America/Toronto'
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
+
+
+# API tokens
+GITHUB_TOKEN = config('GITHUB_API_TOKEN')
+ZENHUB_API_TOKEN = config('ZENHUB_API_TOKEN')
 
 
 # Misc
