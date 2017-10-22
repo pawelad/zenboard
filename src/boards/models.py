@@ -6,7 +6,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.urls import reverse
 
-from boards.utils import github_api
+from boards.utils import github_api, zenhub_api
 
 
 class Board(models.Model):
@@ -94,7 +94,7 @@ class Board(models.Model):
 
     def is_whitelisted(self, user):
         """
-        Helper method that checks if passed user is whitelisted
+        Helper method that checks if passed user is whitelisted.
 
         :param user: Django user
         :type user: users.User
@@ -111,6 +111,67 @@ class Board(models.Model):
             return True
 
         return False
+
+    def get_board_data(self):
+        """
+        Get board data from ZenHub API
+
+        :returns: board pipeline list
+        :rtype: list
+        """
+        board_data = list()
+
+        # We filter issues based on GitHub labels, so we have to first get
+        # the list of allowed issues numbers and then use that to filter
+        # data from ZenHub API
+        gh_repo = self.get_github_repository_client()
+
+        filtered_issues = dict()
+        for issue in gh_repo.iter_issues(labels=self.github_labels):
+            filtered_issues[issue.number] = {
+                'title': issue.title,
+                'state': issue.state,
+            }
+
+        filtered_issues_numbers = list(filtered_issues.keys())
+
+        zenhub_board = zenhub_api.get_board(self.github_repository_id)
+
+        # Zenhub doesn't track closed issues so we have to add them manually
+        closed_filtered_issues_numbers = [
+            issue_number
+            for issue_number, issue in filtered_issues.items()
+            if issue['state'] == 'closed'
+        ]
+
+        zenhub_board.append({
+            'name': 'Closed',
+            # This is to mimic ZenHub API response format
+            'issues': [
+                {'issue_number': issue_number}
+                for issue_number in closed_filtered_issues_numbers
+            ],
+        })
+
+        # Iterate through pipelines and their issues, filter them and get
+        # their title
+        for pipeline in zenhub_board:
+            pipeline_issues = list()
+            for issue in pipeline['issues']:
+                if issue['issue_number'] in filtered_issues_numbers:
+                    issue_number = issue['issue_number']
+                    pipeline_issues.append({
+                        'title': filtered_issues[issue_number]['title'],
+                        'number': issue_number,
+                        'is_epic': issue.get('is_epic', False),
+                    })
+
+            board_data.append({
+                'name': pipeline['name'],
+                'issues': pipeline_issues
+            })
+
+        return board_data
 
     def __str__(self):
         return u'{0.name} board (PK: {0.pk})'.format(self)

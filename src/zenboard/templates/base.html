@@ -19,13 +19,12 @@
   <title>{% block title %}Zenboard{% endblock title %}</title>
 
   {% block css %}
+    {# This is helpful but messes up some Bootstrap default CSS when included after it #}
+    <link rel="stylesheet" href="https://cdn.rawgit.com/froala/design-blocks/686c0df8/dist/css/froala_blocks.css">
     {# Base #}
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdn.rawgit.com/thomaspark/bootswatch/gh-pages/4-alpha/materia/bootstrap.min.css">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat:300,400,700">
-    {# Third party #}
-    <link rel="stylesheet" href="https://cdn.rawgit.com/froala/design-blocks/686c0df8/dist/css/froala_blocks.css">
     {# Own #}
     <link rel="stylesheet" href="{% static 'css/styles.css' %}" >
   {% endblock css %}
@@ -40,7 +39,7 @@
 
   {% block container %}
     <main class="container-fluid" role="main">
-        {% block content %}{% endblock content %}
+      {% block content %}{% endblock content %}
     </main>
   {% endblock container %}
 

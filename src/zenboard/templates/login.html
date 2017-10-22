@@ -1,9 +1,8 @@
 {% extends 'base.html' %}
-{% load static %}
 {% load widget_tweaks %}
 
 
-{% block content %}
+{% block container %}
   <section class="fdb-block">
     <div class="container">
       <div class="row justify-content-center">
@@ -32,7 +31,7 @@
               </div>
               <div class="row mt-4">
                 <div class="col">
-                  <button class="btn btn-primary" type="submit">Submit</button>
+                  <button class="btn btn-lg btn-primary" type="submit">Submit</button>
                 </div>
               </div>
             </form>
@@ -42,4 +41,4 @@
       </div>
     </div>
   </section>
-{% endblock content %}
+{% endblock container %}

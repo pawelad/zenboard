@@ -5,18 +5,27 @@ html {
 }
 
 body {
+  -webkit-font-smoothing: antialiased;
   /* Margin bottom by footer height */
-  margin-bottom: 100px;
+  margin-bottom: 94px;
 }
 
 h1, h2, h3, h4, h5, h6 {
   font-family: 'Montserrat', serif;
 }
 
+a {
+  transition: all 0.2s;
+}
+
+header {
+  margin-bottom: 40px;
+}
+
 .footer {
   position: absolute !important;
   bottom: 0;
-  height: 100px;
+  height: 94px;
   width: 100%;
   background-color: #ECEFF1;
 }
@@ -34,4 +43,30 @@ h1, h2, h3, h4, h5, h6 {
 
 .navbar-brand:hover {
   text-shadow: -1px 1px 10px #ffc, 1px -1px 10px #fff;
+}
+
+/* Boards */
+.board-details > .col {
+  margin-bottom: 30px;
+}
+
+.pipeline .pipeline-name {
+  margin-bottom: 0;
+  text-align: center;
+}
+
+.pipeline > .card {
+  margin-bottom: 25px;
+}
+
+.pipeline > .card:last-child {
+  margin-bottom: 0;
+}
+
+.pipeline .card.issue {
+  background-color: #FAFAFA;
+}
+
+.pipeline .card.issue .card-title {
+  margin-bottom: 0;
 }

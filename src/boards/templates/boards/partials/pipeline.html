@@ -1,0 +1,11 @@
+<div class="col pipeline">
+  <div class="card">
+    <div class="card-header text-white bg-info border-bottom-0">
+      <h4 class="pipeline-name">{{ pipeline.name }}</h4>
+    </div>
+  </div>
+
+  {% for issue in pipeline.issues %}
+    {% include 'boards/partials/issue_card.html' %}
+  {% endfor %}
+</div>

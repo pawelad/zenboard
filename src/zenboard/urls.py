@@ -17,6 +17,8 @@ urlpatterns = [
     url(r'^favicon\.ico$', RedirectView.as_view(url='/static/favicon.ico')),
     url(r'^$', zenboard_views.HomeView.as_view(), name='home'),
 
+    url(r'^boards/', include('boards.urls', namespace='boards')),
+
     # Auth
     url(r'^login/$', zenboard_views.LoginView.as_view(), name='login'),
     url(r'^logout/$', zenboard_views.LogoutView.as_view(), name='logout'),
