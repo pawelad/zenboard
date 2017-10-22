@@ -1,6 +1,7 @@
 """
 boards module related views
 """
+from django.core.cache import cache
 from django.http import Http404
 from django.views.generic import DetailView
 
@@ -33,5 +34,14 @@ class BoardDetailView(DetailView):
         """
         Extends Django's `get_context_data` method and adds board data.
         """
-        kwargs['board_data'] = self.object.get_board_data()
+        # Check if user wants to force refresh
+        if 'force_refresh' in self.request.GET:
+            cache.delete(self.object.get_board_data_cache_key())
+
+        board_data = cache.get_or_set(
+            key=self.object.get_board_data_cache_key(),
+            default=self.object.get_board_data(),
+        )
+        kwargs['board_data'] = board_data
+
         return super().get_context_data(**kwargs)

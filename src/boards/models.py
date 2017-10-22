@@ -43,7 +43,7 @@ class Board(models.Model):
     filter_sign = models.CharField(
         verbose_name='Filter sign',
         max_length=16,
-        default=u'🐙',
+        default='🐙',
     )
 
     include_epics = models.BooleanField(
@@ -173,8 +173,21 @@ class Board(models.Model):
 
         return board_data
 
+    def get_board_data_cache_key(self):
+        """
+        Helper method for returning a unique key used when accessing cache.
+
+        :returns: current board data unique cache key
+        :rtype: str
+        """
+        return '{app_label}.{object_name}:{pk}'.format(
+            app_label=self._meta.app_label,
+            object_name=self._meta.object_name,
+            pk=self.pk,
+        )
+
     def __str__(self):
-        return u'{0.name} board (PK: {0.pk})'.format(self)
+        return '{0.name} board (PK: {0.pk})'.format(self)
 
     def get_absolute_url(self):
         return reverse('boards:details', kwargs={'name': self.name})

@@ -85,13 +85,19 @@ DATABASES = {
     )
 }
 
+DEFAULT_CACHE_TIMEOUT = config(
+    'DEFAULT_CACHE_TIMEOUT',
+    default=60 * 60,  # 1 hour
+    cast=int,
+)
+
 CACHES = {
     'default': {
         'BACKEND': 'django_redis.cache.RedisCache',
         'LOCATION': config(
             'REDIS_CACHE_URL', default='redis://127.0.0.1:6379/0',
         ),
-        'TIMEOUT': 60 * 60,  # 1 hour
+        'TIMEOUT': DEFAULT_CACHE_TIMEOUT,
         'OPTIONS': {
             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
         },
