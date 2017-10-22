@@ -1,3 +1,6 @@
+{% load board_tags %}
+
+
 <header>
   <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
     <div class="container">
@@ -8,13 +11,14 @@
 
       <div class="collapse navbar-collapse" id="mainNavbar">
         <ul class="navbar-nav mr-auto">
-          {% if user.boards.exists %}
+          {% user_available_boards user as user_available_boards %}
+          {% if user_available_boards %}
             <li class="nav-item dropdown">
               <a class="nav-link dropdown-toggle" href="#" id="boardsDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 Boards
               </a>
               <div class="dropdown-menu" aria-labelledby="boardsDropdown">
-                {% for board in user.boards.all %}
+                {% for board in user_available_boards %}
                   <a class="dropdown-item" href="{{ board.get_absolute_url }}">{{ board.name }}</a>
                 {% endfor %}
               </div>

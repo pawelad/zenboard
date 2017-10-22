@@ -6,6 +6,8 @@ specific config from '.env' file and environment variables
 """
 from pathlib import Path
 
+from django.contrib.messages import constants as messages
+
 from decouple import config
 from dj_database_url import parse as db_url
 
@@ -135,6 +137,9 @@ LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'home'
 LOGOUT_REDIRECT_URL = 'home'
 
+MESSAGE_TAGS = {
+    messages.ERROR: 'danger',
+}
 
 #############################
 # Third-party apps settings #

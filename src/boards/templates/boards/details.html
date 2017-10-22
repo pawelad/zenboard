@@ -1,28 +1,30 @@
 {% extends 'base.html' %}
 
 
-{% block content %}
-  <div class="row">
-    {# Header #}
-    <div class="col">
-      <h2>{{ board.name }}</h2>
+{% block container %}
+  <main class="container-fluid" role="main">
+    <div class="row">
+      {# Header #}
+      <div class="col">
+        <h2>{{ board.name }}</h2>
+      </div>
+
+      {# Actions #}
+      <div class="col">
+        <a class="btn btn-outline-info float-right" href="?force_refresh=">
+          <i class="fa fa-fw fa-refresh" aria-hidden="true"></i> Force refresh
+        </a>
+      </div>
     </div>
 
-    {# Actions #}
-    <div class="col">
-      <a class="btn btn-outline-info float-right" href="?force_refresh=">
-        <i class="fa fa-fw fa-refresh" aria-hidden="true"></i> Force refresh
-      </a>
+    <hr>
+
+    <div class="row board-details">
+      {% for pipeline in board_data %}
+        {% include 'boards/partials/pipeline.html' %}
+      {% empty %}
+        <p class="lead">This board has no pipelines.</p>
+      {% endfor %}
     </div>
-  </div>
-
-  <hr>
-
-  <div class="row board-details">
-    {% for pipeline in board_data %}
-      {% include 'boards/partials/pipeline.html' %}
-    {% empty %}
-      <p class="lead">This board has no pipelines.</p>
-    {% endfor %}
-  </div>
-{% endblock content %}
+  </main>
+{% endblock container %}

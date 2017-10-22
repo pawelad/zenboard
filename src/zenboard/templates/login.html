@@ -8,33 +8,32 @@
       <div class="row justify-content-center">
         <div class="col-12 col-md-8 col-lg-7 col-xl-5 text-center">
           <div class="fdb-box fdb-touch">
-            {% include 'forms/form_errors.html' %}
-
             {% with WIDGET_ERROR_CLASS='is-invalid' %}
-            <form method="post" action=".">
-              {% csrf_token %}
-              <div class="row">
-                <div class="col">
-                  <h1>Log In</h1>
+              <form method="post" action=".">
+                {% csrf_token %}
+                <div class="row">
+                  <div class="col">
+                    <h1>Log In</h1>
+                    {% include 'forms/form_errors.html' %}
+                  </div>
                 </div>
-              </div>
-              <div class="row mt-4">
-                <div class="col">
-                  {% render_field form.username class+="form-control" placeholder="Username" %}
+                <div class="row mt-4">
+                  <div class="col">
+                    {% render_field form.username class+="form-control" placeholder="Username" %}
+                  </div>
                 </div>
-              </div>
-              <div class="row mt-4">
-                <div class="col">
-                  {% render_field form.password class+="form-control" placeholder="Password" %}
-                  <p class="text-right"><a href="#">Recover Password</a></p>
+                <div class="row mt-4">
+                  <div class="col">
+                    {% render_field form.password class+="form-control" placeholder="Password" %}
+                    <p class="text-right"><a href="#">Recover Password</a></p>
+                  </div>
                 </div>
-              </div>
-              <div class="row mt-4">
-                <div class="col">
-                  <button class="btn btn-lg btn-primary" type="submit">Submit</button>
+                <div class="row mt-4">
+                  <div class="col">
+                    <button class="btn btn-lg btn-primary" type="submit">Submit</button>
+                  </div>
                 </div>
-              </div>
-            </form>
+              </form>
             {% endwith %}
           </div>
         </div>

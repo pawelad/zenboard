@@ -37,8 +37,13 @@
   {% endblock header %}
 
 
+  {% block messages %}
+    {% include 'partials/messages.html' %}
+  {% endblock messages %}
+
+
   {% block container %}
-    <main class="container-fluid" role="main">
+    <main class="container" role="main">
       {% block content %}{% endblock content %}
     </main>
   {% endblock container %}
