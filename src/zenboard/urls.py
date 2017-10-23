@@ -25,9 +25,10 @@ urlpatterns = [
 
     # API
     url(r'^api/', include([
-        url(r'^docs/', include_docs_urls(title="Zenboard API")),
+        url(r'^', include('zenboard.api_urls', namespace='api')),
+        url(r'^docs/', include_docs_urls(title='Zenboard API')),
         url(r'^schema/$', get_schema_view(title='Zenboard API')),
-    ], namespace='api')),
+    ])),
 
     # Django Admin
     url(r'^django_admin/', admin.site.urls),

@@ -7,7 +7,7 @@ from django.db import models
 from django.urls import reverse
 
 from boards.managers import BoardsQuerySet
-from boards.utils import github_api, zenhub_api
+from zenboard.utils import github_api, zenhub_api
 
 
 class Board(models.Model):
