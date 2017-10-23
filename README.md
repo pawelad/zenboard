@@ -8,9 +8,9 @@ Zenboard is a straightforward Django application that gives you the ability to
 create read only [ZenHub][zenhub] boards that you can share with other people
 without the need to give them access to your GitHub repository.
 
-Still a work in progress.
-
 Based on proof of concept by @kuuji - https://github.com/kuuji/dashub
+
+Very much a work in progress.
 
 ## Running it locally
 Take a look [here][running locally] if you want to run Zenboard locally and
