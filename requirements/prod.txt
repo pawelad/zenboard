@@ -4,6 +4,7 @@ djangorestframework>=3.7.1
 coreapi>=2.3.3
 dj-database-url>=0.4.2
 django-redis>=4.8.0
+django-widget-tweaks>=1.4.1
 github3.py>=0.9.6
 gunicorn>=19.7.1
 Markdown>=2.6.9
