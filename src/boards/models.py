@@ -156,13 +156,18 @@ class Board(models.Model):
         for pipeline in zenhub_board:
             pipeline_issues = list()
             for issue in pipeline['issues']:
-                if issue['issue_number'] in filtered_issues:
-                    issue_number = issue['issue_number']
-                    pipeline_issues.append({
-                        'number': issue_number,
-                        'title': filtered_issues[issue_number]['title'],
-                        'is_epic': issue.get('is_epic', False),
-                    })
+                if issue['issue_number'] not in filtered_issues:
+                    continue
+
+                if not self.include_epics and issue.get('is_epic', False):
+                    continue
+
+                issue_number = issue['issue_number']
+                pipeline_issues.append({
+                    'number': issue_number,
+                    'title': filtered_issues[issue_number]['title'],
+                    'is_epic': issue.get('is_epic', False),
+                })
 
             pipelines.append({
                 'name': pipeline['name'],
