@@ -46,6 +46,9 @@ class Board(models.Model):
         verbose_name='filter sign',
         max_length=16,
         default='🐙',
+        help_text="Issue description and comments will only be visible if they "
+                  "contain this sign / string. If none provided, everything "
+                  "will be shown.",
     )
 
     include_epics = models.BooleanField(
@@ -112,6 +115,7 @@ class Board(models.Model):
             filtered_issues[issue.number] = {
                 'title': issue.title,
                 'state': issue.state,
+                'comments_no': issue.comments,
             }
 
         return filtered_issues
@@ -155,9 +159,11 @@ class Board(models.Model):
             for issue in pipeline['issues']:
                 if issue['issue_number'] in filtered_issues:
                     issue_number = issue['issue_number']
+                    comments_no = filtered_issues[issue_number]['comments_no']
                     pipeline_issues.append({
-                        'title': filtered_issues[issue_number]['title'],
                         'number': issue_number,
+                        'title': filtered_issues[issue_number]['title'],
+                        'comments_no': comments_no,
                         'is_epic': issue.get('is_epic', False),
                     })
 
