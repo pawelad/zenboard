@@ -42,17 +42,21 @@ class BoardViewSet(viewsets.ReadOnlyModelViewSet):
     @detail_route(methods=['get'])
     def pipelines(self, request, pk=None):
         """
-        Returns board pipelines data
+        Returns board pipelines data.
+
+        Uses cache by default - to force refresh you can pass a
+        `force_refresh` GET parameter.
         """
         board = self.get_object()
 
         # Check if user wants to force refresh
         if 'force_refresh' in self.request.GET:
-            board.invalidate_cache()
+            board.invalidate_cache('filtered_issues')
+            board.invalidate_cache('pipelines')
 
         pipelines = cache.get_or_set(
             key=board.get_cache_key('pipelines'),
-            default=board.get_pipelines(),
+            default=lambda: board.get_pipelines(),
         )
 
         return Response(pipelines)
@@ -60,14 +64,22 @@ class BoardViewSet(viewsets.ReadOnlyModelViewSet):
     @detail_route(methods=['get'], url_path='issue/(?P<issue_number>\d+)')
     def issue(self, request, pk=None, issue_number=None):
         """
-        Returns board pipelines data
+        Returns board pipelines data.
+
+        Uses cache by default - to force refresh you can pass a
+        `force_refresh` GET parameter.
         """
         board = self.get_object()
         issue_number = int(issue_number)
 
+        # Check if user wants to force refresh
+        if 'force_refresh' in self.request.GET:
+            board.invalidate_cache('filtered_issues')
+            board.invalidate_cache('issue:{}'.format(issue_number))
+
         filtered_issues = cache.get_or_set(
             key=board.get_cache_key('filtered_issues'),
-            default=board.get_filtered_issues(),
+            default=lambda: board.get_filtered_issues(),
         )
 
         # User should only be able to access the issue data if he has access
@@ -77,7 +89,7 @@ class BoardViewSet(viewsets.ReadOnlyModelViewSet):
 
         issue_data = cache.get_or_set(
             key=board.get_cache_key('issue:{}'.format(issue_number)),
-            default=get_issue_data(board, issue_number),
+            default=lambda: get_issue_data(board, issue_number),
         )
 
         return Response(issue_data)

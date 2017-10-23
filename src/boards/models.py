@@ -133,7 +133,7 @@ class Board(models.Model):
 
         filtered_issues = cache.get_or_set(
             key=self.get_cache_key('filtered_issues'),
-            default=self.get_filtered_issues(),
+            default=lambda: self.get_filtered_issues(),
         )
 
         # Zenhub doesn't track closed issues so we have to add them manually
@@ -190,9 +190,15 @@ class Board(models.Model):
             resource=resource,
         )
 
-    def invalidate_cache(self):
-        """Helper method for invalidating all related cache"""
-        cache.delete_pattern(self.get_cache_key('*'))
+    def invalidate_cache(self, resource='*'):
+        """
+        Helper method for invalidating all related cache.
+
+        :param resource: path to resource that we want to invalidate;
+                         you can use glob syntax to match multiple keys
+        :type resource: str
+        """
+        cache.delete_pattern(self.get_cache_key(resource))
 
     def __str__(self):
         return '{0.name} board (PK: {0.pk})'.format(self)

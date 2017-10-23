@@ -43,7 +43,7 @@ class BoardDetailView(LoginRequiredMixin, DetailView):
 
         pipelines = cache.get_or_set(
             key=board.get_cache_key('pipelines'),
-            default=board.get_pipelines(),
+            default=lambda: board.get_pipelines(),
         )
         kwargs['pipelines'] = pipelines
 
