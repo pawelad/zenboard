@@ -20,7 +20,7 @@
     <hr>
 
     <div class="row board-details">
-      {% for pipeline in board_data %}
+      {% for pipeline in pipelines %}
         {% include 'boards/partials/pipeline.html' %}
       {% empty %}
         <p class="lead">This board has no pipelines.</p>

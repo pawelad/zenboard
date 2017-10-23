@@ -95,14 +95,14 @@ class Board(models.Model):
 
         return gh_repo
 
-    def get_board_data(self):
+    def get_pipelines(self):
         """
-        Get board data from ZenHub API
+        Get board pipelines data from ZenHub API.
 
         :returns: board pipeline list
         :rtype: list
         """
-        board_data = list()
+        pipelines = list()
 
         # We filter issues based on GitHub labels, so we have to first get
         # the list of allowed issues numbers and then use that to filter
@@ -149,21 +149,22 @@ class Board(models.Model):
                         'is_epic': issue.get('is_epic', False),
                     })
 
-            board_data.append({
+            pipelines.append({
                 'name': pipeline['name'],
                 'issues': pipeline_issues
             })
 
-        return board_data
+        return pipelines
 
-    def get_board_data_cache_key(self):
+    def get_pipelines_cache_key(self):
         """
-        Helper method for returning a unique key used when accessing cache.
+        Helper method for generating a unique key that's used when
+        accessing pipelines data from cache.
 
         :returns: current board data unique cache key
         :rtype: str
         """
-        return '{app_label}.{object_name}:{pk}'.format(
+        return '{app_label}.{object_name}:{pk}:pipelines'.format(
             app_label=self._meta.app_label,
             object_name=self._meta.object_name,
             pk=self.pk,

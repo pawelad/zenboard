@@ -1,7 +1,10 @@
 """
 boards module API views
 """
+from django.core.cache import cache
 from rest_framework import viewsets
+from rest_framework.decorators import detail_route
+from rest_framework.response import Response
 
 from boards.models import Board
 from boards.serializers import BoardSerializer
@@ -33,3 +36,21 @@ class BoardViewSet(viewsets.ReadOnlyModelViewSet):
         Returns specified board details.
         """
         return super().retrieve(request, *args, **kwargs)
+
+    @detail_route(methods=['get'])
+    def pipelines(self, request, pk=None):
+        """
+        Returns board pipelines data
+        """
+        board = self.get_object()
+
+        # Check if user wants to force refresh
+        if 'force_refresh' in self.request.GET:
+            cache.delete(board.get_pipelines_cache_key())
+
+        pipelines = cache.get_or_set(
+            key=board.get_pipelines_cache_key(),
+            default=board.get_pipelines(),
+        )
+
+        return Response(pipelines)

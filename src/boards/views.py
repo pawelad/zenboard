@@ -35,14 +35,16 @@ class BoardDetailView(LoginRequiredMixin, DetailView):
         """
         Extends Django's `get_context_data` method and adds board data.
         """
+        board = self.object
+
         # Check if user wants to force refresh
         if 'force_refresh' in self.request.GET:
-            cache.delete(self.object.get_board_data_cache_key())
+            cache.delete(board.get_pipelines_cache_key())
 
-        board_data = cache.get_or_set(
-            key=self.object.get_board_data_cache_key(),
-            default=self.object.get_board_data(),
+        pipelines = cache.get_or_set(
+            key=board.get_pipelines_cache_key(),
+            default=board.get_pipelines(),
         )
-        kwargs['board_data'] = board_data
+        kwargs['pipelines'] = pipelines
 
         return super().get_context_data(**kwargs)
