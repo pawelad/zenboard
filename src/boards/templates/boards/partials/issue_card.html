@@ -3,8 +3,9 @@
     <h5 class="card-title">{{ issue.title }}</h5>
   </div>
   <div class="card-footer text-right">
-    <button type="button" class="btn btn-sm btn-primary">
-      Comments <span class="badge badge-light">{{ issue.comments_no }}</span>
+    <button type="button" class="btn btn-sm btn-primary" data-issue-url="{% url 'api:board-issue' pk=board.pk issue_number=issue.number %}"
+            data-toggle="modal" data-target="#issueDetails">
+      Comments
     </button>
   </div>
 </div>

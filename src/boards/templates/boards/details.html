@@ -26,5 +26,52 @@
         <p class="lead">This board has no pipelines.</p>
       {% endfor %}
     </div>
+
+    {# Issue details modal window #}
+    {% include 'boards/partials/issue_details_modal.html' %}
   </main>
 {% endblock container %}
+
+
+{% block extra_js %}
+  <script>
+    $(function() {
+      // Generate modals dynamically based on clicked issue button
+      var issue_modal = $('#issueDetails');
+
+      issue_modal.on('show.bs.modal', function (event) {
+        var modal = $(this);
+        var button = $(event.relatedTarget); // Button that triggered the modal
+
+        var issue_url = button.data('issue-url');
+
+        // Background call to our API
+        $.get(issue_url, function(data) {
+          modal.find('#issueTitle').text(data['title']);
+
+          var body_arr =[];
+
+          if (data['body']) {
+            body_arr.push(data['body']);
+          }
+
+          data['comments'].forEach(function(element) {
+              body_arr.push(element['body']);
+          });
+
+          modal.find('#issueBody').html(body_arr.join('<hr>'));
+        });
+      });
+
+      issue_modal.on('hidden.bs.modal', function (event) {
+        var modal = $(this);
+        modal.find('#issueTitle').text('...');
+        modal.find('#issueBody').html(
+          '<div class="loading d-flex justify-content-center align-items-center">' +
+          '  <i class="fa fa-circle-o-notch fa-spin fa-3x fa-fw"></i>' +
+          '</div>'
+        );
+      });
+    })
+  </script>
+{% endblock extra_js %}

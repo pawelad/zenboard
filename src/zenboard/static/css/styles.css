@@ -71,3 +71,9 @@ header {
 .pipeline .card.issue .card-title {
   margin-bottom: 0;
 }
+
+
+/* Issue modal window */
+#issueBody .loading {
+  min-height: 200px;
+}

@@ -115,7 +115,6 @@ class Board(models.Model):
             filtered_issues[issue.number] = {
                 'title': issue.title,
                 'state': issue.state,
-                'comments_no': issue.comments,
             }
 
         return filtered_issues
@@ -159,11 +158,9 @@ class Board(models.Model):
             for issue in pipeline['issues']:
                 if issue['issue_number'] in filtered_issues:
                     issue_number = issue['issue_number']
-                    comments_no = filtered_issues[issue_number]['comments_no']
                     pipeline_issues.append({
                         'number': issue_number,
                         'title': filtered_issues[issue_number]['title'],
-                        'comments_no': comments_no,
                         'is_epic': issue.get('is_epic', False),
                     })
 

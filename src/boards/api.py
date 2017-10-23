@@ -39,7 +39,7 @@ class BoardViewSet(viewsets.ReadOnlyModelViewSet):
         """
         return super().retrieve(request, *args, **kwargs)
 
-    @detail_route(methods=['get'])
+    @detail_route()
     def pipelines(self, request, pk=None):
         """
         Returns board pipelines data.
@@ -61,7 +61,7 @@ class BoardViewSet(viewsets.ReadOnlyModelViewSet):
 
         return Response(pipelines)
 
-    @detail_route(methods=['get'], url_path='issue/(?P<issue_number>\d+)')
+    @detail_route(url_name='issue', url_path='issue/(?P<issue_number>\d+)')
     def issue(self, request, pk=None, issue_number=None):
         """
         Returns board pipelines data.
