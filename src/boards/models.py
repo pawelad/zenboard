@@ -2,6 +2,7 @@
 boards module models
 """
 from django.conf import settings
+from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.urls import reverse
@@ -95,18 +96,15 @@ class Board(models.Model):
 
         return gh_repo
 
-    def get_pipelines(self):
+    def get_filtered_issues(self):
         """
-        Get board pipelines data from ZenHub API.
+        We filter issues based on GitHub labels, so we have to first get
+        the list of allowed issues numbers and then use that to filter
+        data from ZenHub API
 
-        :returns: board pipeline list
-        :rtype: list
+        :returns: filtered GitHub issues
+        :rtype: dict
         """
-        pipelines = list()
-
-        # We filter issues based on GitHub labels, so we have to first get
-        # the list of allowed issues numbers and then use that to filter
-        # data from ZenHub API
         gh_repo = self.get_github_repository_client()
 
         filtered_issues = dict()
@@ -116,9 +114,23 @@ class Board(models.Model):
                 'state': issue.state,
             }
 
-        filtered_issues_numbers = list(filtered_issues.keys())
+        return filtered_issues
+
+    def get_pipelines(self):
+        """
+        Get board pipelines data from ZenHub API.
+
+        :returns: board pipeline list
+        :rtype: list
+        """
+        pipelines = list()
 
         zenhub_board = zenhub_api.get_board(self.github_repository_id)
+
+        filtered_issues = cache.get_or_set(
+            key=self.get_cache_key('filtered_issues'),
+            default=self.get_filtered_issues(),
+        )
 
         # Zenhub doesn't track closed issues so we have to add them manually
         closed_filtered_issues_numbers = [
@@ -141,7 +153,7 @@ class Board(models.Model):
         for pipeline in zenhub_board:
             pipeline_issues = list()
             for issue in pipeline['issues']:
-                if issue['issue_number'] in filtered_issues_numbers:
+                if issue['issue_number'] in filtered_issues:
                     issue_number = issue['issue_number']
                     pipeline_issues.append({
                         'title': filtered_issues[issue_number]['title'],
@@ -156,19 +168,25 @@ class Board(models.Model):
 
         return pipelines
 
-    def get_pipelines_cache_key(self):
+    def get_cache_key(self, resource):
         """
-        Helper method for generating a unique key that's used when
-        accessing pipelines data from cache.
+        Helper method for generating a resource cache key.
 
+        :param resource: resource type
+        :type resource: str
         :returns: current board data unique cache key
         :rtype: str
         """
-        return '{app_label}.{object_name}:{pk}:pipelines'.format(
+        return '{app_label}.{object_name}:{pk}:{resource}'.format(
             app_label=self._meta.app_label,
             object_name=self._meta.object_name,
             pk=self.pk,
+            resource=resource,
         )
+
+    def invalidate_cache(self):
+        """Helper method for invalidating all related cache"""
+        cache.delete_pattern(self.get_cache_key('*'))
 
     def __str__(self):
         return '{0.name} board (PK: {0.pk})'.format(self)

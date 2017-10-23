@@ -2,12 +2,14 @@
 boards module API views
 """
 from django.core.cache import cache
+from django.http import Http404
 from rest_framework import viewsets
 from rest_framework.decorators import detail_route
 from rest_framework.response import Response
 
 from boards.models import Board
 from boards.serializers import BoardSerializer
+from boards.utils import get_issue_data
 
 
 class BoardViewSet(viewsets.ReadOnlyModelViewSet):
@@ -46,11 +48,36 @@ class BoardViewSet(viewsets.ReadOnlyModelViewSet):
 
         # Check if user wants to force refresh
         if 'force_refresh' in self.request.GET:
-            cache.delete(board.get_pipelines_cache_key())
+            board.invalidate_cache()
 
         pipelines = cache.get_or_set(
-            key=board.get_pipelines_cache_key(),
+            key=board.get_cache_key('pipelines'),
             default=board.get_pipelines(),
         )
 
         return Response(pipelines)
+
+    @detail_route(methods=['get'], url_path='issue/(?P<issue_number>\d+)')
+    def issue(self, request, pk=None, issue_number=None):
+        """
+        Returns board pipelines data
+        """
+        board = self.get_object()
+        issue_number = int(issue_number)
+
+        filtered_issues = cache.get_or_set(
+            key=board.get_cache_key('filtered_issues'),
+            default=board.get_filtered_issues(),
+        )
+
+        # User should only be able to access the issue data if he has access
+        # to a board that this issue belongs to
+        if issue_number not in filtered_issues:
+            raise Http404
+
+        issue_data = cache.get_or_set(
+            key=board.get_cache_key('issue:{}'.format(issue_number)),
+            default=get_issue_data(board, issue_number),
+        )
+
+        return Response(issue_data)

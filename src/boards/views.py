@@ -39,10 +39,10 @@ class BoardDetailView(LoginRequiredMixin, DetailView):
 
         # Check if user wants to force refresh
         if 'force_refresh' in self.request.GET:
-            cache.delete(board.get_pipelines_cache_key())
+            board.invalidate_cache()
 
         pipelines = cache.get_or_set(
-            key=board.get_pipelines_cache_key(),
+            key=board.get_cache_key('pipelines'),
             default=board.get_pipelines(),
         )
         kwargs['pipelines'] = pipelines
