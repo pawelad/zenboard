@@ -103,15 +103,19 @@ class Board(models.Model):
         """
         We filter issues based on GitHub labels, so we have to first get
         the list of allowed issues numbers and then use that to filter
-        data from ZenHub API
+        data from ZenHub API.
 
         :returns: filtered GitHub issues
         :rtype: dict
         """
         gh_repo = self.get_github_repository_client()
+        gh_issues = gh_repo.iter_issues(
+            labels=self.github_labels,
+            state='all',
+        )
 
         filtered_issues = dict()
-        for issue in gh_repo.iter_issues(labels=self.github_labels):
+        for issue in gh_issues:
             filtered_issues[issue.number] = {
                 'title': issue.title,
                 'state': issue.state,
