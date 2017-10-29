@@ -126,8 +126,8 @@ USE_TZ = True
 
 
 # API tokens
-GITHUB_TOKEN = config('GITHUB_API_TOKEN')
-ZENHUB_API_TOKEN = config('ZENHUB_API_TOKEN')
+GITHUB_TOKEN = config('GITHUB_API_TOKEN', default='')
+ZENHUB_API_TOKEN = config('ZENHUB_API_TOKEN', default='')
 
 
 # Misc

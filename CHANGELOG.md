@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog][keepachangelog] and this project
 adheres to [Semantic Versioning][semver].
 
 ## [Unreleased][unreleased]
+### Changed
+- Don't require `GITHUB_API_TOKEN` and `ZENHUB_API_TOKEN` to be set and log a
+  warning message if they're not.
 
 ## [v0.1.1][v0.1.1] - 2017-10-28
 ### Fixed
