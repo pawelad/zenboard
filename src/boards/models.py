@@ -46,9 +46,9 @@ class Board(models.Model):
         verbose_name='filter sign',
         max_length=16,
         default='🐙',
-        help_text="Issue description and comments will only be visible if they "
-                  "contain this sign / string. If none provided, everything "
-                  "will be shown.",
+        help_text="Issue description and comments will only be visible if "
+                  "they contain this sign / string. If none provided, "
+                  "everything will be shown.",
     )
 
     include_epics = models.BooleanField(
