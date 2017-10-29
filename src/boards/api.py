@@ -25,7 +25,13 @@ class BoardViewSet(viewsets.ReadOnlyModelViewSet):
         :returns: filtered queryset
         :rtype: django.db.models.QuerySet
         """
-        return Board.objects.for_user(self.request.user)
+        qs = Board.objects.all()
+
+        # Allow superuser to see all boards
+        if not self.request.user.is_superuser:
+            qs = qs.for_user(self.request.user)
+
+        return qs
 
     def list(self, request, *args, **kwargs):
         """
