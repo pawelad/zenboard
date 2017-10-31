@@ -6,6 +6,7 @@ adheres to [Semantic Versioning][semver].
 
 ## [Unreleased][unreleased]
 ### Changed
+- Major frontend changes.
 - Don't require `GITHUB_API_TOKEN` and `ZENHUB_API_TOKEN` to be set and log a
   warning message if they're not.
 

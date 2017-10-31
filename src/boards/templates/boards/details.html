@@ -11,7 +11,7 @@
 
       {# Actions #}
       <div class="col">
-        <a class="btn btn-outline-info float-right" href="?force_refresh=">
+        <a class="btn btn-outline-secondary float-right" href="?force_refresh=">
           <i class="fa fa-fw fa-refresh" aria-hidden="true"></i> Force refresh
         </a>
       </div>
@@ -19,7 +19,7 @@
 
     <hr>
 
-    <div class="row board-details">
+    <div class="row flex-nowrap">
       {% for pipeline in pipelines %}
         {% include 'boards/partials/pipeline.html' %}
       {% empty %}

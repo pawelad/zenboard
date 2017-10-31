@@ -1,11 +1,16 @@
-<div class="col pipeline">
-  <div class="card">
-    <div class="card-header text-white bg-info border-bottom-0">
-      <h4 class="pipeline-name">{{ pipeline.name }}</h4>
+<div class="col px-2">
+  <div class="card pipeline">
+    <div class="card-header text-white bg-primary border-bottom-0">
+      <h6 class="mb-0 text-center">
+        {{ pipeline.name }}
+        <span class="badge badge-light pull-right">{{ pipeline.issues|length }}</span>
+      </h6>
+    </div>
+
+    <div class="card-body">
+      {% for issue in pipeline.issues %}
+        {% include 'boards/partials/issue_card.html' %}
+      {% endfor %}
     </div>
   </div>
-
-  {% for issue in pipeline.issues %}
-    {% include 'boards/partials/issue_card.html' %}
-  {% endfor %}
 </div>
