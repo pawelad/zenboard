@@ -15,6 +15,13 @@ from boards.utils import get_issue_data
 class BoardViewSet(viewsets.ReadOnlyModelViewSet):
     """
     This endpoint returns boards available to currently logged in user.
+
+    It's readonly and has four simple methods:
+
+    - `/`: Returns a list of boards available to currently logged in user.
+    - `/:pk/`: Returns specified board details.
+    - `/:pk/pipelines/`: Returns board pipelines details.
+    - `/:pk/issue/:issue_number/`: Returns board issue details.
     """
     serializer_class = BoardSerializer
 
@@ -45,7 +52,7 @@ class BoardViewSet(viewsets.ReadOnlyModelViewSet):
         """
         return super().retrieve(request, *args, **kwargs)
 
-    @detail_route()
+    @detail_route(methods=['get'], suffix='pipelines')
     def pipelines(self, request, pk=None):
         """
         Returns board pipelines data.
@@ -67,7 +74,8 @@ class BoardViewSet(viewsets.ReadOnlyModelViewSet):
 
         return Response(pipelines)
 
-    @detail_route(url_name='issue', url_path='issue/(?P<issue_number>\d+)')
+    @detail_route(methods=['get'], suffix='issue details',
+                  url_name='issue', url_path='issue/(?P<issue_number>\d+)')
     def issue(self, request, pk=None, issue_number=None):
         """
         Returns board pipelines data.

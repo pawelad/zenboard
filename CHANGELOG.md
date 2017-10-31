@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog][keepachangelog] and this project
 adheres to [Semantic Versioning][semver].
 
 ## [Unreleased][unreleased]
+### Added
+- Added `pipelines` URL field to `BoardSerializer`.
+
 ### Changed
 - Minor frontend changes to Django REST Framework views.
 - Major frontend changes.
