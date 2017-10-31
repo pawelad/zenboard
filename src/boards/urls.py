@@ -8,7 +8,7 @@ from boards import views
 
 urlpatterns = [
     url(
-        r'^(?P<name>[-\w]+)/$',
+        r'^(?P<slug>[-\w]+)/$',
         views.BoardDetailView.as_view(),
         name='details',
     ),

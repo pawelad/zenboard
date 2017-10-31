@@ -18,8 +18,13 @@ class Board(models.Model):
     Model representation of a Zenhub, read only board. It specifies how should
     the ZenHub data be filtered and who should be able to access it.
     """
-    name = models.SlugField(
-        verbose_name='Name',
+    name = models.CharField(
+        verbose_name='name',
+        max_length=255,
+    )
+
+    slug = models.SlugField(
+        verbose_name='slug',
         unique=True,
     )
 
@@ -47,6 +52,7 @@ class Board(models.Model):
     filter_sign = models.CharField(
         verbose_name='filter sign',
         max_length=16,
+        blank=True,
         default='🐙',
         help_text="Issue description and comments will only be visible if "
                   "they contain this sign / string. If none provided, "
@@ -56,6 +62,11 @@ class Board(models.Model):
     include_epics = models.BooleanField(
         verbose_name='include Epic issues',
         default=False,
+    )
+
+    show_closed_pipeline = models.BooleanField(
+        verbose_name="show 'Closed' pipeline",
+        default=True,
     )
 
     is_active = models.BooleanField(
@@ -166,20 +177,21 @@ class Board(models.Model):
         )
 
         # Zenhub doesn't track closed issues so we have to add them manually
-        closed_filtered_issues_numbers = [
-            issue_number
-            for issue_number, issue in filtered_issues.items()
-            if issue['state'] == 'closed'
-        ]
+        if self.show_closed_pipeline:
+            closed_filtered_issues_numbers = [
+                issue_number
+                for issue_number, issue in filtered_issues.items()
+                if issue['state'] == 'closed'
+            ]
 
-        zenhub_board.append({
-            'name': 'Closed',
-            # This is to mimic ZenHub API response format
-            'issues': [
-                {'issue_number': issue_number}
-                for issue_number in closed_filtered_issues_numbers
-            ],
-        })
+            zenhub_board.append({
+                'name': 'Closed',
+                # This is to mimic ZenHub API response format
+                'issues': [
+                    {'issue_number': issue_number}
+                    for issue_number in closed_filtered_issues_numbers
+                ],
+            })
 
         # Iterate through pipelines and their issues, filter them and get
         # their title

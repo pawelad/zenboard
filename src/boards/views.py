@@ -13,8 +13,6 @@ class BoardDetailView(LoginRequiredMixin, DetailView):
     Board instance detail view
     """
     model = models.Board
-    slug_url_kwarg = 'name'
-    slug_field = 'name'
     template_name = 'boards/details.html'
     context_object_name = 'board'
 

@@ -6,6 +6,8 @@ adheres to [Semantic Versioning][semver].
 
 ## [Unreleased][unreleased]
 ### Added
+- Renamed `Board.name` field to `slug` and added proper `name` field.
+- Added `Board.show_closed_pipeline` field.
 - Added issue progress and available comments data to issue card.
   Note: huge performance drop when fetching a 'fresh' board.
 - Added `pipelines` URL field to `BoardSerializer`.
@@ -16,6 +18,9 @@ adheres to [Semantic Versioning][semver].
 - Major frontend changes.
 - Don't require `GITHUB_API_TOKEN` and `ZENHUB_API_TOKEN` to be set and log a
   warning message if they're not.
+
+### Fixed
+- `Board.filter_sign` can be left blank.
 
 ## [v0.1.1][v0.1.1] - 2017-10-28
 ### Fixed

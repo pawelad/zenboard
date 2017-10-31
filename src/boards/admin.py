@@ -19,6 +19,7 @@ class BoardAdmin(admin.ModelAdmin):
         'whitelisted_users', 'is_active', 'github_repository',
         'created', 'modified',
     )
+    prepopulated_fields = {'slug': ('name',)}
     search_fields = ('name', 'github_repository')
 
     def get_users(self, obj):
