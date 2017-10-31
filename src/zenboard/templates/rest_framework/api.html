@@ -1,0 +1,16 @@
+{% extends "rest_framework/base.html" %}
+
+
+{% block title %}
+  {% if name %}{{ name }} | {% endif %}Zenboard
+{% endblock title %}
+
+
+{% block bootstrap_theme %}
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.3.7/paper/bootstrap.min.css">
+{% endblock bootstrap_theme %}
+
+
+ {% block branding %}
+  <a class="navbar-brand" href="{% url 'home' %}">Zenboard API</a>
+{% endblock branding %}
