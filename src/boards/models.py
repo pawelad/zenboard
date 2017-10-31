@@ -245,7 +245,7 @@ class Board(models.Model):
         return '{0.name} board (PK: {0.pk})'.format(self)
 
     def get_absolute_url(self):
-        return reverse('boards:details', kwargs={'name': self.name})
+        return reverse('boards:details', kwargs={'slug': self.slug})
 
     def clean(self):
         """

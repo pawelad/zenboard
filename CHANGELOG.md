@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog][keepachangelog] and this project
 adheres to [Semantic Versioning][semver].
 
 ## [Unreleased][unreleased]
+### Fixed
+- Fixed `Board.get_absolute_url`.
 
 ## [v0.2.0][v0.2.0] - 2017-10-31
 ### Added
