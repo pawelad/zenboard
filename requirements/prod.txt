@@ -1,6 +1,7 @@
 Django>=1.11.6,<2.0
 djangorestframework>=3.7.1
 
+attrs>=17.2.0
 coreapi>=2.3.3
 dj-database-url>=0.4.2
 django-redis>=4.8.0

@@ -9,6 +9,7 @@ adheres to [Semantic Versioning][semver].
 - Added `pipelines` URL field to `BoardSerializer`.
 
 ### Changed
+- Created `Issue` helper class and moved `get_issue_details` function there.
 - Minor frontend changes to Django REST Framework views.
 - Major frontend changes.
 - Don't require `GITHUB_API_TOKEN` and `ZENHUB_API_TOKEN` to be set and log a

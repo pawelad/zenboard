@@ -7,9 +7,9 @@ from rest_framework import viewsets
 from rest_framework.decorators import detail_route
 from rest_framework.response import Response
 
+from boards.issues import Issue
 from boards.models import Board
 from boards.serializers import BoardSerializer
-from boards.utils import get_issue_data
 
 
 class BoardViewSet(viewsets.ReadOnlyModelViewSet):
@@ -101,9 +101,10 @@ class BoardViewSet(viewsets.ReadOnlyModelViewSet):
         if issue_number not in filtered_issues:
             raise Http404
 
+        issue = Issue(issue_number)
         issue_data = cache.get_or_set(
             key=board.get_cache_key('issue:{}'.format(issue_number)),
-            default=lambda: get_issue_data(board, issue_number),
+            default=lambda: issue.get_details(board),
         )
 
         return Response(issue_data)
