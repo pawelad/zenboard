@@ -1,3 +1,6 @@
+{% load humanize %}
+
+
 <div class="card issue {% if not forloop.first %}mt-3{% endif %}"
      data-issue-url="{% url 'api:board-issue' pk=board.pk issue_number=issue.number %}"
      data-issue-number="{{ issue.number }}" data-toggle="modal" data-target="#issueDetails">
@@ -5,11 +8,15 @@
     <h6 class="mb-0">{{ issue.title }}</h6>
   </div>
   <div class="card-footer">
-    <span class="d-block small"><b>Comments:</b> 5</span>
-    <span class="d-block small"><b>Updated:</b> 2017-01-01</span>
+    <span class="d-block small"><b>Comments:</b> {{ issue.available_comments }}</span>
+    <span class="d-block small"><b>Last updated:</b> <time datetime="{{ issue.updated_at|date:'c' }}">{{ issue.updated_at|naturaltime }}</time></span>
 
-    <div class="progress mt-1">
-      <div class="progress-bar" role="progressbar" style="width: 25%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">25%</div>
-    </div>
+    {% if issue.progress is not None %}
+      {# No 'percentage' template tag, let's go with 'widthratio' to multiply by 100 #}
+      {% widthratio issue.progress 1 100 as progress %}
+      <div class="progress mt-1">
+        <div class="progress-bar" role="progressbar" style="width: {{ progress }}%;" aria-valuenow="{{ progress }}" aria-valuemin="0" aria-valuemax="100">{{ progress }}%</div>
+      </div>
+    {% endif %}
   </div>
 </div>

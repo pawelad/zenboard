@@ -6,6 +6,8 @@ adheres to [Semantic Versioning][semver].
 
 ## [Unreleased][unreleased]
 ### Added
+- Added issue progress and available comments data to issue card.
+  Note: huge performance drop when fetching a 'fresh' board.
 - Added `pipelines` URL field to `BoardSerializer`.
 
 ### Changed

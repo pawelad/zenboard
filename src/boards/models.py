@@ -6,7 +6,9 @@ from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.urls import reverse
+from django.utils.functional import cached_property
 
+from boards.issues import Issue
 from boards.managers import BoardsQuerySet
 from zenboard.utils import github_api, zenhub_api
 
@@ -87,6 +89,7 @@ class Board(models.Model):
         get_latest_by = 'modified'
         ordering = ('-modified', '-created')
 
+    @cached_property
     def get_github_repository_client(self):
         """
         Helper method for getting GitHub repository client.
@@ -108,18 +111,41 @@ class Board(models.Model):
         :returns: filtered GitHub issues
         :rtype: dict
         """
-        gh_repo = self.get_github_repository_client()
-        gh_issues = gh_repo.iter_issues(
+        gh_issues = self.get_github_repository_client.iter_issues(
             labels=self.github_labels,
             state='all',
         )
 
         filtered_issues = dict()
-        for issue in gh_issues:
-            filtered_issues[issue.number] = {
-                'title': issue.title,
-                'state': issue.state,
+        for gh_issue in gh_issues:
+            # TODO: To refactor!
+            issue_details = cache.get_or_set(
+                key=self.get_cache_key('issue:{}'.format(gh_issue.number)),
+                default=lambda: Issue(gh_issue).get_details(self.filter_sign),
+            )
+
+            available_comments = len(issue_details['comments'])
+            if issue_details['body']:
+                available_comments += 1
+
+            issue_data = {
+                'number': gh_issue.number,
+                'title': gh_issue.title,
+                'state': gh_issue.state,
+                'author': gh_issue.user.name or gh_issue.user.login,
+                'progress': issue_details['progress'],
+                'available_comments': available_comments,
+                'created_at': gh_issue.created_at,
+                'updated_at': gh_issue.updated_at,
+                'closed_at': gh_issue.closed_at,
             }
+
+            if gh_issue.assignee:
+                issue_data['assignee'] = (
+                    gh_issue.assignee.name or gh_issue.assignee.login
+                )
+
+            filtered_issues[gh_issue.number] = issue_data
 
         return filtered_issues
 
@@ -166,12 +192,9 @@ class Board(models.Model):
                 if not self.include_epics and issue.get('is_epic', False):
                     continue
 
-                issue_number = issue['issue_number']
-                pipeline_issues.append({
-                    'number': issue_number,
-                    'title': filtered_issues[issue_number]['title'],
-                    'is_epic': issue.get('is_epic', False),
-                })
+                issue_data = filtered_issues[issue['issue_number']]
+                issue_data['is_epic'] = issue.get('is_epic', False)
+                pipeline_issues.append(issue_data)
 
             pipelines.append({
                 'name': pipeline['name'],
@@ -218,11 +241,9 @@ class Board(models.Model):
         """
         # Make sure that provided GitHub repo is valid and accessible
         try:
-            gh_repo = self.get_github_repository_client()
+            gh_repo = self.get_github_repository_client
             if not gh_repo:
                 raise ValueError
-
-            self.github_repository_id = gh_repo.id
         except AttributeError:
             raise ValidationError(
                 "GitHub client isn't configured properly."
@@ -231,6 +252,8 @@ class Board(models.Model):
             raise ValidationError({
                 'github_repository': "Inaccessible GitHub repository."
             })
+        else:
+            self.github_repository_id = gh_repo.id
 
         # Strip any leading and trailing whitespace just to be safe
         self.github_labels = self.github_labels.strip()

@@ -84,6 +84,7 @@ class BoardViewSet(viewsets.ReadOnlyModelViewSet):
         `force_refresh` GET parameter.
         """
         board = self.get_object()
+        gh_repo = board.get_github_repository_client
         issue_number = int(issue_number)
 
         # Check if user wants to force refresh
@@ -101,10 +102,10 @@ class BoardViewSet(viewsets.ReadOnlyModelViewSet):
         if issue_number not in filtered_issues:
             raise Http404
 
-        issue = Issue(issue_number)
-        issue_data = cache.get_or_set(
+        issue = Issue(gh_repo.issue(issue_number))
+        issue_details = cache.get_or_set(
             key=board.get_cache_key('issue:{}'.format(issue_number)),
-            default=lambda: issue.get_details(board),
+            default=lambda: issue.get_details(board.filter_sign),
         )
 
-        return Response(issue_data)
+        return Response(issue_details)
