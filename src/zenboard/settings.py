@@ -26,6 +26,8 @@ ALLOWED_HOSTS = config(
 )
 
 
+SITE_ID = 1
+
 ROOT_URLCONF = 'zenboard.urls'
 
 WSGI_APPLICATION = 'zenboard.wsgi.application'
@@ -35,9 +37,10 @@ INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
     'django.contrib.humanize',
+    'django.contrib.messages',
+    'django.contrib.sessions',
+    'django.contrib.sites',
     'whitenoise.runserver_nostatic',
     'django.contrib.staticfiles',
 

@@ -1,7 +1,10 @@
 """
 boards module models
 """
+import logging
+
 from django.conf import settings
+from django.contrib.sites.models import Site
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -11,6 +14,9 @@ from django.utils.functional import cached_property
 from boards.issues import Issue
 from boards.managers import BoardsQuerySet
 from zenboard.utils import github_api, zenhub_api
+
+
+logger = logging.getLogger(__name__)
 
 
 class Board(models.Model):
@@ -271,3 +277,34 @@ class Board(models.Model):
         self.github_labels = self.github_labels.strip()
 
         return super().clean()
+
+    def save(self, *args, **kwargs):
+        """
+        Extend Django's `save` method and create a GitHub webhook on creation.
+        """
+        if not self.pk:
+            site = Site.objects.get_current()
+            receiver_url = 'https://{domain}{webhook_endpoint}'.format(
+                domain=site.domain,
+                webhook_endpoint=reverse('webhooks:github'),
+            )
+
+            hook = self.get_github_repository_client.create_hook(
+                name='web',
+                config={
+                    'url': receiver_url,
+                    'content_type': 'json',
+                },
+                events=['issues', 'issue_comment'],
+            )
+
+            if hook:
+                logger.info(
+                    "GitHub webhook for {!r} created: {!r}".format(self, hook)
+                )
+            else:
+                logger.warning(
+                    "GitHub webhook for {!r} wasn't created".format(self)
+                )
+
+        return super(Board, self).save(*args, **kwargs)
