@@ -18,6 +18,7 @@ urlpatterns = [
     url(r'^$', zenboard_views.HomeView.as_view(), name='home'),
 
     url(r'^boards/', include('boards.urls', namespace='boards')),
+    url(r'^webhooks/', include('webhooks.urls', namespace='webhooks')),
 
     # Auth
     url(r'^login/$', zenboard_views.LoginView.as_view(), name='login'),

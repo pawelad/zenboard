@@ -43,6 +43,7 @@ INSTALLED_APPS = [
 
     'zenboard',
     'boards',
+    'webhooks',
 
     'django_redis',
     'rest_framework',
@@ -126,9 +127,11 @@ USE_L10N = True
 USE_TZ = True
 
 
-# API tokens
+# APIs
 GITHUB_TOKEN = config('GITHUB_API_TOKEN', default='')
 ZENHUB_API_TOKEN = config('ZENHUB_API_TOKEN', default='')
+
+GITHUB_WEBHOOK_SECRET = config('GITHUB_WEBHOOK_SECRET', default='')
 
 
 # Misc
