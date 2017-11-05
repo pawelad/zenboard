@@ -20,7 +20,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 from ipware.ip import get_ip
 
-from webhooks.signals import github_event
+from webhooks.signals import github_event, zenhub_event
 from zenboard.utils import github_api
 
 
@@ -33,8 +33,8 @@ class GitHubWebhookReceiverView(View):
     @method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):
         """
-        Extends Django's `dispatch` method and makes sure that passed
-        request is valid and send from GitHub.
+        Extend Django's `dispatch` method, exempt it from CSRF check and make
+        sure that passed request is valid and send from GitHub.
         """
         # Make sure request is from GitHub
         request_ip = ip_address(get_ip(request))
@@ -81,6 +81,35 @@ class GitHubWebhookReceiverView(View):
             sender=self.__class__.__name__,
             event=event,
             guid=guid,
+            payload=payload,
+        )
+
+        return HttpResponse('Webhook received', status=HTTPStatus.OK)
+
+
+class ZenHubWebhookReceiverView(View):
+    """
+    ZenHub webhook receiver view.
+    """
+    http_method_names = ['post']
+
+    @method_decorator(csrf_exempt)
+    def dispatch(self, request, *args, **kwargs):
+        """
+        Extend Django's `dispatch` method and exempt it from CSRF check.
+        """
+        return super().dispatch(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        """
+        Receive ZenHub event payload and trigger appropriate signal.
+        """
+        payload = json.loads(request.body or '{}')
+        event = payload.get('type')
+
+        zenhub_event.send(
+            sender=self.__class__.__name__,
+            event=event,
             payload=payload,
         )
 

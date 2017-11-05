@@ -12,4 +12,9 @@ urlpatterns = [
         views.GitHubWebhookReceiverView.as_view(),
         name='github',
     ),
+    url(
+        r'^zenhub/$',
+        views.ZenHubWebhookReceiverView.as_view(),
+        name='zenhub',
+    ),
 ]
