@@ -12,24 +12,41 @@ create read only [ZenHub][zenhub] boards.
 
 Based on proof of concept by [@kuuji][kuuji] - [kuuji/dashub][kuuji dashub]
 
-Usable at the moment, but very much a work in progress.
+Usable at the moment, but very much a work in progress. Expect breaking changes
+with each release before 1.0
 
 ## High level overview
 Zenboard aims to provide an easy way to create a filtered and read only views
 of a Zenhub boards. It's currently used to give customers an overview of their
-issues that doesn't require double lifting (we already use ZenHub to track 
-that), allows specifying exactly which issues and comments should be visible,
-and can be used without a GitHub account.
+issues that doesn't require double lifting (if you already use ZenHub to track 
+that), allows specifying which issues and comments should be visible based on
+couple of factors, and can be used without a GitHub account inside the
+organization.
 
-Caching is built in and a priority because of the sheer number of requests to
-both ZenHub and GitHub APIs needed to generate the board view.
+Caching is builtin and a priority because of the sheer number of requests to
+both ZenHub and GitHub APIs needed to generate the board view and necessary
+data. GitHub and ZenHub webhooks are used to refresh the cache, so the data
+should theoretically always be up to date.
 
-See [TODO.md][todo list] for current, loose roadmap.
+There is a REST API with docs for all important endpoints, courtesy of Django
+REST Framework.
+
+See [TODO.md][todo list] for current roadmap.
 
 ## Running Zenboard
 Take a look [here][running zenboard] if you want to run Zenboard yourself,
 either locally or in production, and [open an issue][zenboard new issue] if
 you have any questions or problems.
+
+Make sure that provided GitHub API token has access rights to the repository
+you want to use and can create webhooks, which will be created automatically
+on board creation.
+
+ZenHub unfortunately doesn't allow automatic webhook creation so you need to
+add it manually and point it to - `https://<zenboard_url>/webhooks/zenhub/`.
+
+Django [Sites][django sites] framework is used to get the full URLs so make
+sure that you configured your domain before creating any boards.
 
 ## Contributions
 Feel free to use, ask, fork, star, report bugs, fix them, suggest enhancements,
@@ -57,6 +74,7 @@ Released under [Apache License 2.0][license].
 
 
 [coveralls]: https://coveralls.io/github/pawelad/zenboard
+[django sites]: https://docs.djangoproject.com/en/1.11/ref/contrib/sites/
 [github]: https://github.com/pawelad/zenboard
 [kuuji]: https://github.com/kuuji
 [kuuji dashub]: https://github.com/kuuji/dashub
