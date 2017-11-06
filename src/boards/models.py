@@ -11,6 +11,7 @@ from django.db import models
 from django.urls import reverse
 from django.utils.functional import cached_property
 
+from boards.issues import BoardIssue
 from boards.managers import BoardsQuerySet
 from zenboard.utils import github_api, zenhub_api
 
@@ -187,19 +188,9 @@ class Board(models.Model):
 
                 issue_data = filtered_issues[issue_number]
                 issue_data['is_epic'] = issue.get('is_epic', False)
-
-                # Get issue details API URL
-                api_endpoint = reverse(
-                    'api:board-issue', kwargs={
-                        'pk': self.pk,
-                        'issue_number': issue_number,
-                    }
-                )
-                issue_api_endpoint = 'https://{domain}{api_endpoint}'.format(
-                    domain=Site.objects.get_current().domain,
-                    api_endpoint=api_endpoint,
-                )
-                issue_data['details_url'] = issue_api_endpoint
+                issue_data['details_url'] = BoardIssue(
+                    board=self, issue_number=issue_number,
+                ).get_api_endpoint()
 
                 pipeline_issues.append(issue_data)
 
@@ -220,6 +211,7 @@ class Board(models.Model):
         return cache.get_or_set(
             key=self.get_cache_key('filtered_issues'),
             default=self._get_filtered_issues,
+            timeout=settings.BOARDS_CACHE_TIMEOUT,
         )
 
     def pipelines(self):
@@ -232,6 +224,7 @@ class Board(models.Model):
         return cache.get_or_set(
             key=self.get_cache_key('pipelines'),
             default=self._get_pipelines,
+            timeout=settings.BOARDS_CACHE_TIMEOUT,
         )
 
     def get_cache_key(self, resource):

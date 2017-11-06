@@ -98,6 +98,15 @@ DEFAULT_CACHE_TIMEOUT = config(
     cast=int,
 )
 
+# If all webhooks are configured correctly, this can be set to 'None'
+# Be careful to overwrite this without any automatic refreshing mechanism,
+# as full board view takes >10 seconds to generate
+BOARDS_CACHE_TIMEOUT = config(
+    'BOARDS_CACHE_TIMEOUT',
+    default=None,
+)
+
+
 CACHES = {
     'default': {
         'BACKEND': 'django_redis.cache.RedisCache',

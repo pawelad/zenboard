@@ -3,7 +3,11 @@ boards module GitHub issue related code
 """
 import re
 
+from django.conf import settings
+from django.contrib.sites.models import Site
 from django.core.cache import cache
+from django.urls import reverse
+from django.utils.functional import cached_property
 
 import attr
 
@@ -21,18 +25,21 @@ class BoardIssue:
     board = attr.ib()
     issue_number = attr.ib()
 
-    def __attr_post_init__(self):
-        self.gh_issue = self.board.gh_repo.issue(
+    @cached_property
+    def gh_issue(self):
+        """
+        Helper property that returns GitHub issue API instance
+        """
+        return self.board.gh_repo.issue(
             number=self.issue_number,
         )
 
-    def _iter_comments(self):
+    @cached_property
+    def comments(self):
         """
-        Helper method for caching issue comments.
+        Helper property for caching issue comments.
         """
-        if not hasattr(self, 'comments'):
-            self.comments = list(self.gh_issue.iter_comments())
-        return self.comments
+        return list(self.gh_issue.iter_comments())
 
     def _get_details(self):
         """
@@ -41,16 +48,13 @@ class BoardIssue:
         :returns: GitHub issue data
         :rtype: dict
         """
-        self.gh_issue = self.board.gh_repo.issue(
-            number=self.issue_number,
-        )
-
         # Base
         issue_details = {
             'number': self.gh_issue.number,
             'title': self.gh_issue.title,
             'author': self.gh_issue.user.name or self.gh_issue.user.login,
             'state': self.gh_issue.state,
+            'labels': [l.name for l in self.gh_issue.labels],
             'created_at': self.gh_issue.created_at,
             'updated_at': self.gh_issue.updated_at,
             'closed_at': self.gh_issue.closed_at,
@@ -61,10 +65,6 @@ class BoardIssue:
             issue_details['assignee'] = (
                 self.gh_issue.assignee.name or self.gh_issue.assignee.login
             )
-
-        # Labels
-        labels = [l.name for l in self.gh_issue.labels]
-        issue_details['labels'] = ', '.join(labels)
 
         # Custom
         issue_details['body'] = self._get_description()
@@ -101,7 +101,7 @@ class BoardIssue:
         filter_sign = self.board.filter_sign
 
         comments = list()
-        for comment in self._iter_comments():
+        for comment in self.comments:
             if filter_sign is None:
                 body = comment.body_html
             elif filter_sign is not None and filter_sign in comment.body:
@@ -132,7 +132,7 @@ class BoardIssue:
         body = self.gh_issue.body
 
         if include_comments:
-            for comment in self._iter_comments():
+            for comment in self.comments:
                 body += '\n'
                 body += comment.body
 
@@ -154,7 +154,28 @@ class BoardIssue:
         return cache.get_or_set(
             key=self.get_cache_key(),
             default=self._get_details,
+            timeout=settings.BOARDS_CACHE_TIMEOUT,
         )
+
+    def get_api_endpoint(self):
+        """
+        Return full API endpoint URL.
+
+        :returns: full issue details API endpoint
+        :rtype: str
+        """
+        api_endpoint = reverse(
+            'api:board-issue', kwargs={
+                'pk': self.board.pk,
+                'issue_number': self.issue_number,
+            }
+        )
+        issue_api_endpoint = 'https://{domain}{api_endpoint}'.format(
+            domain=Site.objects.get_current().domain,
+            api_endpoint=api_endpoint,
+        )
+
+        return issue_api_endpoint
 
     def get_cache_key(self):
         """
