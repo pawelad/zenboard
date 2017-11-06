@@ -250,15 +250,19 @@ class Board(models.Model):
             resource=resource,
         )
 
-    def invalidate_cache(self, resource='*'):
+    def invalidate_cache(self, resource='*', glob=True):
         """
         Helper method for invalidating all related cache.
 
-        :param resource: path to resource that we want to invalidate;
-                         you can use glob syntax to match multiple keys
+        :param resource: path to resource that we want to invalidate
         :type resource: str
+        :param glob: wheter you can use glob syntax to match multiple keys
+        :type glob: bool
         """
-        cache.delete_pattern(self.get_cache_key(resource))
+        if glob:
+            cache.delete_pattern(self.get_cache_key(resource))
+        else:
+            cache.delete(self.get_cache_key(resource))
 
     def __str__(self):
         return '{0.name} board (PK: {0.pk})'.format(self)

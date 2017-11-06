@@ -10,3 +10,6 @@ class BoardsConfig(AppConfig):
     """
     name = 'boards'
     verbose_name = "Boards"
+
+    def ready(self):
+        import boards.signals  # noqa

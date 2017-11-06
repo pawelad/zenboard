@@ -90,6 +90,7 @@ ul {
 }
 
 /* Don't stile GitHub Markdown to do list */
-#issueDetails ul.containstasklist {
+#issueDetails ul.containstasklist,
+#issueDetails ul.contains-task-list {
   list-style: none;
 }

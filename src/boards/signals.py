@@ -24,7 +24,7 @@ def invalidate_issue_details_cache(sender, event, guid, payload, **kwargs):
         boards = Board.objects.filter(github_repository=repository)
 
         for board in boards:
-            board.invalidate_cache('filtered_issues')
+            board.invalidate_cache('filtered_issues', glob=False)
             board.filtered_issues()
 
             board_issue = BoardIssue(board, issue_number)
