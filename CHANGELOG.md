@@ -5,6 +5,16 @@ The format is based on [Keep a Changelog][keepachangelog] and this project
 adheres to [Semantic Versioning][semver].
 
 ## [Unreleased][unreleased]
+### Added
+- Added GitHub and ZenHub webhooks integration, receiver views and event
+  handlers.
+
+### Changed
+- Big changes to caching structure, moved even more logic to
+  `boards.issues.BoardIssue` (renamed from `Issue`) and made it board specific.
+  
+### Fixed
+- Fixed GitHub to do list CSS styling.
 
 ## [v0.2.1][v0.2.1] - 2017-10-31
 ### Fixed
