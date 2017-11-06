@@ -3,52 +3,85 @@ boards module GitHub issue related code
 """
 import re
 
-import attr
+from django.core.cache import cache
 
+import attr
 
 UNFINISHED_TODO_ITEM = re.compile(r'^\s*- \[ \]', re.MULTILINE)
 FINISHED_TODO_ITEM = re.compile(r'^\s*- \[x\]', re.MULTILINE)
 
 
 @attr.s
-class Issue:
+class BoardIssue:
     """
-    Helper class for organizing GitHub issue related logic.
+    Helper class for organizing GitHub issue related logic. It's board specific
+    because it includes description and comments body filtering, which depend
+    on `Board.filter_sign` field.
     """
-    gh_issue = attr.ib()
+    board = attr.ib()
+    issue_number = attr.ib()
+
+    def __attr_post_init__(self):
+        self.gh_issue = self.board.gh_repo.issue(
+            number=self.issue_number,
+        )
 
     def _iter_comments(self):
-        """Helper method for caching issue comments"""
+        """
+        Helper method for caching issue comments.
+        """
         if not hasattr(self, 'comments'):
             self.comments = list(self.gh_issue.iter_comments())
         return self.comments
 
-    def get_details(self, filter_sign=None):
+    def _get_details(self):
         """
-        Get GitHub issue details.
+        Get uncached GitHub issue details.
 
-        :param filter_sign: filter sign
-        :type filter_sign: str
         :returns: GitHub issue data
         :rtype: dict
         """
-        return {
+        self.gh_issue = self.board.gh_repo.issue(
+            number=self.issue_number,
+        )
+
+        # Base
+        issue_details = {
             'number': self.gh_issue.number,
             'title': self.gh_issue.title,
-            'progress': self.get_progress(),
-            'body': self.get_description(filter_sign),
-            'comments': self.get_comments(filter_sign),
+            'author': self.gh_issue.user.name or self.gh_issue.user.login,
+            'state': self.gh_issue.state,
+            'created_at': self.gh_issue.created_at,
+            'updated_at': self.gh_issue.updated_at,
+            'closed_at': self.gh_issue.closed_at,
         }
 
-    def get_description(self, filter_sign=None):
-        """
-        Get GitHub issue description.
+        # Assignee
+        if self.gh_issue.assignee:
+            issue_details['assignee'] = (
+                self.gh_issue.assignee.name or self.gh_issue.assignee.login
+            )
 
-        :param filter_sign: filter sign
-        :type filter_sign: str
+        # Labels
+        labels = [l.name for l in self.gh_issue.labels]
+        issue_details['labels'] = ', '.join(labels)
+
+        # Custom
+        issue_details['body'] = self._get_description()
+        issue_details['comments'] = self._get_comments()
+        issue_details['progress'] = self._get_progress()
+
+        return issue_details
+
+    def _get_description(self):
+        """
+        Get uncached GitHub issue description.
+
         :returns: GitHub issue description
         :rtype: dict
         """
+        filter_sign = self.board.filter_sign
+
         if filter_sign is None:
             body = self.gh_issue.body_html
         elif filter_sign is not None and filter_sign in self.gh_issue.body:
@@ -58,15 +91,15 @@ class Issue:
 
         return body
 
-    def get_comments(self, filter_sign=None):
+    def _get_comments(self):
         """
-        Get GitHub issue comments.
+        Get uncached GitHub issue comments.
 
-        :param filter_sign: filter sign
-        :type filter_sign: str
         :returns: GitHub issue comments data
         :rtype: dict
         """
+        filter_sign = self.board.filter_sign
+
         comments = list()
         for comment in self._iter_comments():
             if filter_sign is None:
@@ -86,9 +119,10 @@ class Issue:
 
         return comments
 
-    def get_progress(self, include_comments=True):
+    def _get_progress(self, include_comments=True):
         """
-        Return issue progress, which is the percentage of marked to do tasks.
+        Return uncached issue progress, which is the percentage of done
+        to do tasks.
 
         :param include_comments: whether to include comments
         :type include_comments: bool
@@ -109,3 +143,32 @@ class Issue:
             return finished / (finished + unfinished)
         else:
             return None
+
+    def details(self):
+        """
+        Get cached (if possible) GitHub issue details.
+
+        :returns: GitHub issue data
+        :rtype: dict
+        """
+        return cache.get_or_set(
+            key=self.get_cache_key(),
+            default=self._get_details,
+        )
+
+    def get_cache_key(self):
+        """
+        Helper method for generating a resource cache key.
+
+        :returns: current issue data unique cache key
+        :rtype: str
+        """
+        return self.board.get_cache_key(
+            'issue:{number}'.format(number=self.issue_number),
+        )
+
+    def invalidate_cache(self):
+        """
+        Helper method for invalidating issue cache.
+        """
+        cache.delete(self.get_cache_key())

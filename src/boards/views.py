@@ -39,10 +39,6 @@ class BoardDetailView(LoginRequiredMixin, DetailView):
         if 'force_refresh' in self.request.GET:
             board.invalidate_cache()
 
-        pipelines = cache.get_or_set(
-            key=board.get_cache_key('pipelines'),
-            default=lambda: board.get_pipelines(),
-        )
-        kwargs['pipelines'] = pipelines
+        kwargs['pipelines'] = board.pipelines()
 
         return super().get_context_data(**kwargs)

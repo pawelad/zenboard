@@ -11,7 +11,6 @@ from django.db import models
 from django.urls import reverse
 from django.utils.functional import cached_property
 
-from boards.issues import Issue
 from boards.managers import BoardsQuerySet
 from zenboard.utils import github_api, zenhub_api
 
@@ -107,7 +106,7 @@ class Board(models.Model):
         ordering = ('-modified', '-created')
 
     @cached_property
-    def get_github_repository_client(self):
+    def gh_repo(self):
         """
         Helper method for getting GitHub repository client.
 
@@ -119,56 +118,33 @@ class Board(models.Model):
 
         return gh_repo
 
-    def get_filtered_issues(self):
+    def _get_filtered_issues(self):
         """
-        We filter issues based on GitHub labels, so we have to first get
-        the list of allowed issues numbers and then use that to filter
-        data from ZenHub API.
+        Get uncached filtered list of board GitHub issues. We filter issues
+        based on GitHub labels, so we have to first get the list of allowed
+        issues numbers and then use that to filter data from ZenHub API.
 
         :returns: filtered GitHub issues
         :rtype: dict
         """
-        gh_issues = self.get_github_repository_client.iter_issues(
+        gh_issues = self.gh_repo.iter_issues(
             labels=self.github_labels,
             state='all',
         )
 
         filtered_issues = dict()
         for gh_issue in gh_issues:
-            # TODO: To refactor!
-            issue_details = cache.get_or_set(
-                key=self.get_cache_key('issue:{}'.format(gh_issue.number)),
-                default=lambda: Issue(gh_issue).get_details(self.filter_sign),
-            )
-
-            available_comments = len(issue_details['comments'])
-            if issue_details['body']:
-                available_comments += 1
-
-            issue_data = {
+            filtered_issues[gh_issue.number] = {
                 'number': gh_issue.number,
                 'title': gh_issue.title,
                 'state': gh_issue.state,
-                'author': gh_issue.user.name or gh_issue.user.login,
-                'progress': issue_details['progress'],
-                'available_comments': available_comments,
-                'created_at': gh_issue.created_at,
-                'updated_at': gh_issue.updated_at,
-                'closed_at': gh_issue.closed_at,
             }
-
-            if gh_issue.assignee:
-                issue_data['assignee'] = (
-                    gh_issue.assignee.name or gh_issue.assignee.login
-                )
-
-            filtered_issues[gh_issue.number] = issue_data
 
         return filtered_issues
 
-    def get_pipelines(self):
+    def _get_pipelines(self):
         """
-        Get board pipelines data from ZenHub API.
+        Get uncached board pipelines data from ZenHub API.
 
         :returns: board pipeline list
         :rtype: list
@@ -177,10 +153,7 @@ class Board(models.Model):
 
         zenhub_board = zenhub_api.get_board(self.github_repository_id)
 
-        filtered_issues = cache.get_or_set(
-            key=self.get_cache_key('filtered_issues'),
-            default=lambda: self.get_filtered_issues(),
-        )
+        filtered_issues = self.filtered_issues()
 
         # Zenhub doesn't track closed issues so we have to add them manually
         if self.show_closed_pipeline:
@@ -204,14 +177,30 @@ class Board(models.Model):
         for pipeline in zenhub_board:
             pipeline_issues = list()
             for issue in pipeline['issues']:
-                if issue['issue_number'] not in filtered_issues:
+                issue_number = issue['issue_number']
+
+                if issue_number not in filtered_issues:
                     continue
 
                 if not self.include_epics and issue.get('is_epic', False):
                     continue
 
-                issue_data = filtered_issues[issue['issue_number']]
+                issue_data = filtered_issues[issue_number]
                 issue_data['is_epic'] = issue.get('is_epic', False)
+
+                # Get issue details API URL
+                api_endpoint = reverse(
+                    'api:board-issue', kwargs={
+                        'pk': self.pk,
+                        'issue_number': issue_number,
+                    }
+                )
+                issue_api_endpoint = 'https://{domain}{api_endpoint}'.format(
+                    domain=Site.objects.get_current().domain,
+                    api_endpoint=api_endpoint,
+                )
+                issue_data['details_url'] = issue_api_endpoint
+
                 pipeline_issues.append(issue_data)
 
             pipelines.append({
@@ -220,6 +209,30 @@ class Board(models.Model):
             })
 
         return pipelines
+
+    def filtered_issues(self):
+        """
+        Get cached (if possible) filtered list of board GitHub issues.
+
+        :returns: filtered GitHub issues
+        :rtype: dict
+        """
+        return cache.get_or_set(
+            key=self.get_cache_key('filtered_issues'),
+            default=self._get_filtered_issues,
+        )
+
+    def pipelines(self):
+        """
+        Get cached (if possible) board pipelines data from ZenHub API.
+
+        :returns: filtered GitHub issues
+        :rtype: dict
+        """
+        return cache.get_or_set(
+            key=self.get_cache_key('pipelines'),
+            default=self._get_pipelines,
+        )
 
     def get_cache_key(self, resource):
         """
@@ -259,7 +272,7 @@ class Board(models.Model):
         """
         # Make sure that provided GitHub repo is valid and accessible
         try:
-            gh_repo = self.get_github_repository_client
+            gh_repo = self.gh_repo
             if not gh_repo:
                 raise ValueError
         except AttributeError:
@@ -283,24 +296,31 @@ class Board(models.Model):
         Extend Django's `save` method and create a GitHub webhook on creation.
         """
         if not self.pk:
-            site = Site.objects.get_current()
             receiver_url = 'https://{domain}{webhook_endpoint}'.format(
-                domain=site.domain,
+                domain=Site.objects.get_current().domain,
                 webhook_endpoint=reverse('webhooks:github'),
             )
 
-            hook = self.get_github_repository_client.create_hook(
-                name='web',
-                config={
+            webhook_kwargs = {
+                'name': 'web',
+                'config': {
                     'url': receiver_url,
                     'content_type': 'json',
                 },
-                events=['issues', 'issue_comment'],
-            )
+                'events': ['issues', 'issue_comment'],
+            }
+
+            # Only include secret if it's set
+            if settings.GITHUB_WEBHOOK_SECRET:
+                kwargs['config']['secret'] = settings.GITHUB_WEBHOOK_SECRET
+
+            hook = self.gh_repo.create_hook(**webhook_kwargs)
 
             if hook:
                 logger.info(
-                    "GitHub webhook for {!r} created: {!r}".format(self, hook)
+                    "GitHub webhook for {!r} with kwargs '{}' created".format(
+                        self, kwargs,
+                    )
                 )
             else:
                 logger.warning(

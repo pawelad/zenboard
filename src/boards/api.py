@@ -1,13 +1,12 @@
 """
 boards module API views
 """
-from django.core.cache import cache
 from django.http import Http404
 from rest_framework import viewsets
 from rest_framework.decorators import detail_route
 from rest_framework.response import Response
 
-from boards.issues import Issue
+from boards.issues import BoardIssue
 from boards.models import Board
 from boards.serializers import BoardSerializer
 
@@ -57,7 +56,7 @@ class BoardViewSet(viewsets.ReadOnlyModelViewSet):
         """
         Returns board pipelines data.
 
-        Uses cache by default - to force refresh you can pass a
+        Uses cached data by default - to force refresh you can pass a
         `force_refresh` GET parameter.
         """
         board = self.get_object()
@@ -67,12 +66,7 @@ class BoardViewSet(viewsets.ReadOnlyModelViewSet):
             board.invalidate_cache('filtered_issues')
             board.invalidate_cache('pipelines')
 
-        pipelines = cache.get_or_set(
-            key=board.get_cache_key('pipelines'),
-            default=lambda: board.get_pipelines(),
-        )
-
-        return Response(pipelines)
+        return Response(board.pipelines())
 
     @detail_route(methods=['get'], suffix='issue details',
                   url_name='issue', url_path='issue/(?P<issue_number>\d+)')
@@ -80,32 +74,21 @@ class BoardViewSet(viewsets.ReadOnlyModelViewSet):
         """
         Returns board pipelines data.
 
-        Uses cache by default - to force refresh you can pass a
+        Uses cached data by default - to force refresh you can pass a
         `force_refresh` GET parameter.
         """
         board = self.get_object()
-        gh_repo = board.get_github_repository_client
         issue_number = int(issue_number)
+        issue = BoardIssue(board, issue_number)
 
         # Check if user wants to force refresh
         if 'force_refresh' in self.request.GET:
             board.invalidate_cache('filtered_issues')
-            board.invalidate_cache('issue:{}'.format(issue_number))
-
-        filtered_issues = cache.get_or_set(
-            key=board.get_cache_key('filtered_issues'),
-            default=lambda: board.get_filtered_issues(),
-        )
+            issue.invalidate_cache()
 
         # User should only be able to access the issue data if he has access
         # to a board that this issue belongs to
-        if issue_number not in filtered_issues:
+        if issue_number not in board.filtered_issues():
             raise Http404
 
-        issue = Issue(gh_repo.issue(issue_number))
-        issue_details = cache.get_or_set(
-            key=board.get_cache_key('issue:{}'.format(issue_number)),
-            default=lambda: issue.get_details(board.filter_sign),
-        )
-
-        return Response(issue_details)
+        return Response(issue.details())

@@ -1,4 +1,5 @@
 {% load humanize %}
+{% load board_tags %}
 
 
 <div class="card issue {% if not forloop.first %}mt-3{% endif %}"
@@ -8,12 +9,13 @@
     <h6 class="mb-0">{{ issue.title }}</h6>
   </div>
   <div class="card-footer">
-    <span class="d-block small"><b>Comments:</b> {{ issue.available_comments }}</span>
-    <span class="d-block small"><b>Last updated:</b> <time datetime="{{ issue.updated_at|date:'c' }}">{{ issue.updated_at|naturaltime }}</time></span>
+    {% issue_details board issue.number as issue_details %}
+    <span class="d-block small"><b>Comments:</b> {{ issue_details.comments|length }}</span>
+    <span class="d-block small"><b>Last updated:</b> <time datetime="{{ issue_details.updated_at|date:'c' }}">{{ issue_details.updated_at|naturaltime }}</time></span>
 
-    {% if issue.progress is not None %}
+    {% if issue_details.progress is not None %}
       {# No 'percentage' template tag, let's go with 'widthratio' to multiply by 100 #}
-      {% widthratio issue.progress 1 100 as progress %}
+      {% widthratio issue_details.progress 1 100 as progress %}
       <div class="progress mt-1">
         <div class="progress-bar" role="progressbar" style="width: {{ progress }}%;" aria-valuenow="{{ progress }}" aria-valuemin="0" aria-valuemax="100">{{ progress }}%</div>
       </div>
